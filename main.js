@@ -21,8 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("tasks", JSON.stringify(tasks));
     }
 
-    function updateDeletedCount() {
-        deletedCount++;
+    function updateDeletedCount(count = 1) {
+        deletedCount += count;
         localStorage.setItem("deletedCount", deletedCount);
         deletedCountDisplay.textContent = deletedCount;
     }
@@ -49,6 +49,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const taskText = document.createElement("span");
             taskText.textContent = task.text;
             taskText.addEventListener("dblclick", () => editTask(index));
+
+            let touchTimer;
+            taskText.addEventListener("touchstart", () => {
+                touchTimer = setTimeout(() => editTask(index), 500);
+            });
+            taskText.addEventListener("touchend", () => clearTimeout(touchTimer));
 
             const taskButtons = document.createElement("div");
             taskButtons.classList.add("task-buttons");
@@ -134,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 saveEdit();
             }
         });
-        input.addEventListener("blur", saveEdit);
+        input.addEventListener("blur", saveEdit);   
     }
 
     function toggleComplete(index) {
@@ -144,7 +150,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function confirmDelete(index) {
-        if (confirm("Are you sure you want to delete this task?")) {
+        const taskName = tasks[index].text; 
+        if (confirm(`Are you sure you want to delete ${taskName}?`)) {
             tasks.splice(index, 1);
             originalTasks = [...tasks]; 
             saveTasks();
@@ -152,6 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
             updateDeletedCount();
         }
     }
+    
 
     function removeSelected() {
         const selectedCount = tasks.filter(task => task.selected).length;
@@ -164,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
             originalTasks = [...tasks]; 
             saveTasks();
             renderTasks();
-            updateDeletedCount();
+            updateDeletedCount(selectedCount);
         }
     }
 
@@ -221,6 +229,11 @@ document.addEventListener("DOMContentLoaded", () => {
             button.style.cursor = "pointer";
         });
     }
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Delete") {
+            removeSelected();
+        }
+    }); 
 
     styleButtons();
     
